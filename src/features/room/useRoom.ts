@@ -52,13 +52,11 @@ export function useRoom() {
       });
     });
 
-  // ✅ Host sets video for the room
   const setRoomVideo = (roomId: string, videoId: string, streamUrl: string) =>
     new Promise<{ ok: boolean; message?: string }>((resolve) => {
       socket.emit("room:video:set", { roomId, videoId, streamUrl }, (ack: any) => resolve(ack));
     });
 
-  // ✅ Playback actions
   const play = (roomId: string, time: number) =>
     new Promise<{ ok: boolean; message?: string }>((resolve) => {
       socket.emit("player:play", { roomId, time, ts: Date.now() }, (ack: any) => resolve(ack));
