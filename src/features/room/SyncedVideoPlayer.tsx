@@ -4,14 +4,12 @@ type Props = {
   src: string | null;
   isHost: boolean;
 
-  // ✅ room playback source of truth
   playback: {
     isPlaying: boolean;
     currentTime: number;
     updatedAt: number;
   } | null;
 
-  // host callbacks
   onHostPlay: (time: number) => void;
   onHostPause: (time: number) => void;
   onHostSeek: (time: number) => void;
@@ -39,19 +37,16 @@ export function SyncedVideoPlayer({
       setNeedsClick(false);
       await video.play();
     } catch {
-      // autoplay blocked OR video not ready
       setNeedsClick(true);
     }
   };
 
-  // ✅ Viewer follows room.playback state (this is the key fix)
   useEffect(() => {
     const video = videoRef.current;
     if (!video || isHost) return;
     if (!src || !playback) return;
 
     const apply = async () => {
-      // wait until metadata is ready before seeking/playing
       if (video.readyState < 1) {
         await new Promise<void>((resolve) => {
           const onLoaded = () => {
@@ -62,7 +57,6 @@ export function SyncedVideoPlayer({
         });
       }
 
-      // drift correction
       const drift = Math.abs(video.currentTime - playback.currentTime);
       if (drift > 0.3) video.currentTime = playback.currentTime;
 
@@ -74,10 +68,8 @@ export function SyncedVideoPlayer({
     };
 
     apply();
-    // re-run whenever playback updates
   }, [playback?.isPlaying, playback?.currentTime, playback?.updatedAt, src, isHost]);
 
-  // ✅ Host emits events + periodic state ping
   useEffect(() => {
     const video = videoRef.current;
     if (!video || !isHost) return;
@@ -135,10 +127,10 @@ export function SyncedVideoPlayer({
           <video
             ref={videoRef}
             src={src}
-            muted={!isHost}        // ✅ viewer muted helps autoplay
+            muted={!isHost}        
             playsInline
             preload="auto"
-            controls={isHost}      // ✅ only host has controls
+            controls={isHost}      
             className="w-full rounded-lg border bg-black aspect-video"
 
           />
